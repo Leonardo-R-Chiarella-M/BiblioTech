@@ -1,0 +1,12 @@
+RewriteEngine On
+RewriteBase /BiblioTech/
+
+# Si alguien entra a la raíz, mandarlo a public/
+RewriteRule ^$ public/ [L]
+
+# Si el archivo NO existe físicamente...
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# ...mandar todo a public/index.php usando el parámetro 'url'
+RewriteRule ^(.*)$ public/index.php?url=$1 [QSA,L]

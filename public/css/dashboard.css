@@ -1,0 +1,101 @@
+/* BIBLIOTECH - Estilos Globales */
+:root {
+    --primary-color: #2c3e50;
+    --secondary-color: #3498db;
+    --accent-color: #e74c3c;
+    --bg-light: #f4f7f6;
+    --text-dark: #333;
+    --white: #ffffff;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--bg-light);
+    color: var(--text-dark);
+    margin: 0;
+    padding: 0;
+}
+
+/* HEADER Y NAVEGACIÓN (Vista General) */
+header {
+    background-color: var(--primary-color);
+    color: var(--white);
+    padding: 1rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.logo-btn img {
+    transition: transform 0.3s ease;
+    cursor: pointer;
+}
+
+.logo-btn img:hover {
+    transform: scale(1.1); /* Efecto al pasar el mouse por el logo */
+}
+
+/* CONTENEDOR DE LOGIN */
+.login-container {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.login-box {
+    background: var(--white);
+    padding: 2.5rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    width: 100%;
+    max-width: 350px;
+    text-align: center;
+}
+
+.login-box h2 {
+    margin-bottom: 1.5rem;
+    color: var(--primary-color);
+}
+
+/* FORMULARIOS */
+input[type="email"],
+input[type="password"],
+input[type="text"] {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box; /* Importante para que no se salga del contenedor */
+}
+
+button {
+    width: 100%;
+    padding: 12px;
+    background-color: var(--secondary-color);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+button:hover {
+    background-color: #2980b9;
+}
+
+/* FOOTER O ENLACES SECUNDARIOS */
+.back-link {
+    display: block;
+    margin-top: 1rem;
+    text-decoration: none;
+    color: #777;
+    font-size: 0.9rem;
+}
+
+.back-link:hover {
+    color: var(--accent-color);
+}
