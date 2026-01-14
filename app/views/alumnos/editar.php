@@ -28,7 +28,9 @@
             
             <label>Correo Institucional</label>
             <input type="email" name="correo" value="<?php echo $alumno['correo_institucional']; ?>">
-            
+
+            <label>Número de Celular</label>
+            <input type="text" name="celular" placeholder="999888777" maxlength="15">
             <label>Estado</label>
             <select name="estado">
                 <option value="activo" <?php echo ($alumno['estado']=='activo')?'selected':''; ?>>Activo</option>

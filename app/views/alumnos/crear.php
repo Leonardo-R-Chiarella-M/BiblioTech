@@ -32,6 +32,10 @@
                 <label>Correo Institucional</label>
                 <input type="email" name="correo">
             </div>
+            <div class="mb-3">
+    <label for="celular" class="form-label">Número de Celular</label>
+    <input type="text" name="celular" id="celular" class="form-control" placeholder="Ej: 987654321">
+</div>
             <div class="form-group">
                 <label>Estado</label>
                 <select name="estado">

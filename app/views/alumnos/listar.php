@@ -4,124 +4,136 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestión de Alumnos - BiblioTech</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        body { background-color: #f4f7f6; display: flex; min-height: 100vh; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { background-color: #f4f7f6; padding: 40px; }
         
-        /* Sidebar */
-        .sidebar { 
-            width: 260px; background: #2c3e50; color: white; padding: 25px; 
-            display: flex; flex-direction: column; position: fixed; height: 100vh;
-        }
-        .sidebar h2 { color: #1abc9c; text-align: center; margin-bottom: 5px; font-size: 26px; }
-        .sidebar .role-tag { font-size: 11px; color: #bdc3c7; text-align: center; margin-bottom: 30px; text-transform: uppercase; letter-spacing: 2px; }
-        .sidebar ul { list-style: none; flex-grow: 1; }
-        .sidebar a { color: #ecf0f1; text-decoration: none; display: block; padding: 12px 15px; border-radius: 8px; transition: 0.3s; }
-        .sidebar a:hover { background: #34495e; color: #1abc9c; }
-        
-        .btn-logout { 
-            background: #e74c3c; color: white !important; text-align: center; 
-            padding: 15px; border-radius: 10px; font-weight: bold; text-decoration: none;
-            margin-top: auto; transition: 0.3s;
+        .container { 
+            max-width: 1300px; 
+            margin: auto; 
+            background: white; 
+            padding: 30px; 
+            border-radius: 20px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05); 
         }
 
-        /* Contenido */
-        .main-content { flex-grow: 1; margin-left: 260px; padding: 40px; }
-        .container { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
-
-        .header-actions { 
-            display: flex; justify-content: space-between; align-items: center; 
-            margin-bottom: 25px; padding-bottom: 20px; border-bottom: 1px solid #eee;
+        .header-area { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 30px; 
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 20px;
         }
-        .btn { padding: 10px 18px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 13px; transition: 0.3s; display: inline-block; }
+
+        .header-area h1 { color: #2c3e50; font-size: 1.8rem; }
+        
+        /* Contenedor de Botones */
+        .btn-group { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        
+        .btn { 
+            padding: 10px 18px; 
+            border-radius: 10px; 
+            text-decoration: none; 
+            font-size: 0.85rem; 
+            font-weight: 600; 
+            transition: 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-back { background: #34495e; color: white; }
         .btn-add { background: #1abc9c; color: white; }
-        .btn-mass { background: #8e44ad; color: white; margin-left: 5px; }
-        .btn-danger { background: #e74c3c; color: white; margin-left: 5px; }
+        .btn-mass { background: #3498db; color: white; }
+        .btn-danger { background: #e74c3c; color: white; }
 
+        .btn:hover { opacity: 0.9; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+
+        /* Tabla */
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #f1f2f6; }
-        th { background: #f8f9fa; color: #7f8c8d; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
-        
-        .badge { padding: 5px 12px; border-radius: 20px; font-size: 10px; font-weight: bold; text-transform: uppercase; }
-        .status-egresado { background: #d4e6f1; color: #2980b9; }
-        .status-activo { background: #d1f2eb; color: #16a085; }
-        .status-inactivo { background: #fadbd8; color: #c0392b; }
+        th { background: #f8f9fa; color: #7f8c8d; text-align: left; padding: 15px; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; }
+        td { padding: 15px; border-bottom: 1px solid #eee; color: #2c3e50; font-size: 0.9rem; }
 
-        .alert { padding: 15px; margin-bottom: 20px; border-radius: 8px; font-weight: bold; text-align: center; font-size: 14px; }
-        .success { background: #d1f2eb; color: #16a085; border: 1px solid #16a085; }
-        .error { background: #fadbd8; color: #c0392b; border: 1px solid #c0392b; }
+        /* Badges de Estado */
+        .status { padding: 5px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: bold; text-transform: uppercase; }
+        .egresado { background: #d4e6f1; color: #2980b9; }
+        .activo { background: #d1f2eb; color: #16a085; }
+        .inactivo { background: #fadbd8; color: #c0392b; }
+
+        .actions a { text-decoration: none; font-weight: 600; font-size: 0.85rem; margin-right: 15px; transition: 0.2s; }
+        .edit-link { color: #3498db; }
+        .delete-link { color: #e74c3c; }
+        .edit-link:hover, .delete-link:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
-    <nav class="sidebar">
-        <h2>BiblioTech</h2>
-        <div class="role-tag">Panel <?php echo ($_SESSION['rol'] == 'superadmin') ? 'Dueño' : 'Bibliotecario'; ?></div>
-        <ul>
-            <li><a href="../<?php echo $_SESSION['rol']; ?>">🏠 Dashboard</a></li>
-            <li><a href="alumnos" style="background: #34495e; color: #1abc9c;">👥 Gestión Alumnos</a></li>
-            <li><a href="#">📚 Libros</a></li>
-        </ul>
-        <a href="../logout" class="btn-logout">Cerrar Sesión</a>
-    </nav>
 
-    <main class="main-content">
-        <div class="container">
-            <?php $msg = $_GET['msg'] ?? ''; ?>
-            <?php if ($msg == 'created'): ?> <div class="alert success">✅ Alumno agregado con éxito.</div> <?php endif; ?>
-            <?php if ($msg == 'updated'): ?> <div class="alert success">ℹ️ Datos actualizados correctamente.</div> <?php endif; ?>
-            <?php if ($msg == 'deleted'): ?> <div class="alert error">🗑️ Registro de alumno eliminado.</div> <?php endif; ?>
-            <?php if ($msg == 'cleared'): ?> <div class="alert error">🔥 La tabla de alumnos ha sido vaciada.</div> <?php endif; ?>
-
-            <div class="header-actions">
-                <div>
-                    <h1>Gestión de Alumnos</h1>
-                    <p style="color: #7f8c8d;">Total: <strong><?php echo count($alumnos); ?></strong> registros encontrados.</p>
-                </div>
-                <div>
-                    <a href="../alumnos/nuevo" class="btn btn-add">➕ Agregar Alumno</a>
-                    
-                    <?php if ($_SESSION['rol'] === 'superadmin'): ?>
-                        <a href="../superadmin/alumnos/carga-masiva" class="btn btn-mass">📥 Carga Masiva</a>
-                        <a href="../superadmin/alumnos/vaciar" class="btn btn-danger" 
-                           onclick="return confirm('⚠️ ¿Desea eliminar TODOS los registros?')">
-                           🗑️ Vaciar Tabla
-                        </a>
-                    <?php endif; ?>
-                </div>
+    <div class="container">
+        <div class="header-area">
+            <div>
+                <h1>Gestión de Alumnos</h1>
+                <p style="color: #95a5a6;">Biblioteca Central - Filial Sur</p>
             </div>
-
-            <table>
-                <thead>
-                    <tr>
-                        <th>DNI</th>
-                        <th>Apellidos y Nombres</th>
-                        <th>Carrera</th>
-                        <th>Correo Institucional</th> <th>Estado</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($alumnos as $a): ?>
-                    <tr>
-                        <td><strong><?php echo htmlspecialchars($a['dni']); ?></strong></td>
-                        <td><?php echo htmlspecialchars($a['apellidos_nombres']); ?></td>
-                        <td><?php echo htmlspecialchars($a['carrera']); ?></td>
-                        <td><?php echo htmlspecialchars($a['correo_institucional'] ?: '---'); ?></td> <td>
-                            <span class="badge status-<?php echo $a['estado']; ?>">
-                                <?php echo $a['estado']; ?>
-                            </span>
-                        </td>
-                        <td>
-                            <a href="../alumnos/editar?id=<?php echo $a['id']; ?>" style="color: #3498db; text-decoration:none; font-weight:bold; margin-right:10px;">Editar</a>
-                            <a href="../alumnos/eliminar?id=<?php echo $a['id']; ?>" 
-                               style="color: #e74c3c; text-decoration:none; font-weight:bold;" 
-                               onclick="return confirm('¿Eliminar registro?')">Eliminar</a>
-                        </td>
-                    </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
+            
+            <div class="btn-group">
+                <a href="../<?php echo $_SESSION['rol']; ?>" class="btn btn-back">⬅️ Volver</a>
+                
+                <a href="../alumnos/nuevo" class="btn btn-add">➕ Agregar Alumno</a>
+                
+                <?php if ($_SESSION['rol'] === 'superadmin'): ?>
+                    <a href="../superadmin/alumnos/carga-masiva" class="btn btn-mass">📥 Carga Masiva</a>
+                    <a href="../superadmin/alumnos/vaciar" class="btn btn-danger" 
+                       onclick="return confirm('⚠️ ¿Desea eliminar TODOS los registros? Esta acción no se puede deshacer.')">
+                       🗑️ Vaciar Tabla
+                    </a>
+                <?php endif; ?>
+            </div>
         </div>
-    </main>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>DNI</th>
+                    <th>Apellidos y Nombres</th>
+                    <th>Carrera</th>
+                    <th>Celular</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($alumnos as $a): ?>
+                <tr>
+                    <td><strong><?php echo htmlspecialchars($a['dni']); ?></strong></td>
+                    <td><?php echo htmlspecialchars($a['apellidos_nombres']); ?></td>
+                    <td><?php echo htmlspecialchars($a['carrera']); ?></td>
+                    <td><?php echo htmlspecialchars($a['celular'] ?? '---'); ?></td>
+                    <td>
+                        <span class="status <?php echo $a['estado']; ?>">
+                            <?php echo htmlspecialchars($a['estado']); ?>
+                        </span>
+                    </td>
+                    <td class="actions">
+                        <a href="../alumnos/editar?id=<?php echo $a['id']; ?>" class="edit-link">Editar</a>
+                        <a href="../alumnos/eliminar?id=<?php echo $a['id']; ?>" 
+                           class="delete-link" 
+                           onclick="return confirm('¿Está seguro de eliminar a este alumno?')">Eliminar</a>
+                    </td>
+                </tr>
+                <?php endforeach; ?>
+                
+                <?php if (empty($alumnos)): ?>
+                <tr>
+                    <td colspan="6" style="text-align:center; padding: 60px; color: #95a5a6;">
+                        No hay alumnos registrados actualmente.
+                    </td>
+                </tr>
+                <?php endif; ?>
+            </tbody>
+        </table>
+    </div>
+
 </body>
 </html>
