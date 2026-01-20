@@ -2,79 +2,95 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel Bibliotecario - BiblioTech</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        /* Mismo CSS base para consistencia */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-        body { background-color: #f4f7f6; display: flex; min-height: 100vh; }
+        body { background-color: #f4f7f6; }
+        .nav-top { background: #fff; padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .container { max-width: 1100px; margin: 40px auto; padding: 0 20px; }
         
-        .sidebar { 
-            width: 260px; background: #2c3e50; color: white; padding: 25px; 
-            display: flex; flex-direction: column; position: fixed; height: 100vh;
-        }
-        .sidebar h2 { color: #3498db; text-align: center; margin-bottom: 5px; font-size: 24px; }
-        .sidebar .role-tag { font-size: 11px; color: #bdc3c7; text-align: center; margin-bottom: 30px; text-transform: uppercase; letter-spacing: 2px; }
-        .sidebar ul { list-style: none; flex-grow: 1; }
-        .sidebar a { color: #ecf0f1; text-decoration: none; display: block; padding: 12px 15px; border-radius: 8px; transition: 0.3s; margin-bottom: 5px; }
-        .sidebar a:hover, .sidebar a.active { background: #34495e; color: #3498db; }
-
-        .btn-logout { 
-            background: #e74c3c; color: white !important; text-align: center; 
-            padding: 15px; border-radius: 10px; font-weight: bold; text-decoration: none;
-            margin-top: auto; transition: 0.3s;
-        }
-
-        .main-content { flex-grow: 1; margin-left: 260px; padding: 40px; }
-        .header { margin-bottom: 40px; }
+        /* Banner de Bienvenida */
+        .welcome-box { background: #1abc9c; color: white; padding: 40px; border-radius: 20px; margin-bottom: 30px; }
         
-        .stats-grid { display: flex; gap: 25px; }
-        .card { 
-            background: white; padding: 35px; border-radius: 20px; text-align: center; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05); border-top: 5px solid #3498db;
-            width: 320px; transition: 0.3s;
-        }
-        .card:hover { transform: translateY(-10px); }
-        .card h3 { color: #7f8c8d; font-size: 0.9rem; text-transform: uppercase; }
-        .card .number { font-size: 3.5rem; font-weight: 700; color: #2c3e50; margin: 15px 0; }
-        .btn-card { 
-            background: #3498db; color: white; text-decoration: none; padding: 12px 25px; 
-            border-radius: 30px; font-weight: bold; display: inline-block; font-size: 0.85rem;
-        }
+        /* Cuadrícula de Estadísticas */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: white; padding: 20px; border-radius: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 15px; position: relative; }
+        .stat-icon { width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+        .stat-info h3 { font-size: 1.5rem; color: #2c3e50; }
+        .stat-info p { color: #7f8c8d; font-size: 0.8rem; font-weight: 600; }
+        
+        /* Botones Principales */
+        .grid-admin { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; }
+        .card-btn { background: white; padding: 30px; border-radius: 20px; text-decoration: none; color: #2c3e50; transition: 0.3s; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.05); border: 1px solid transparent; }
+        .card-btn:hover { transform: translateY(-10px); box-shadow: 0 15px 30px rgba(0,0,0,0.1); border-color: #1abc9c; }
+        .card-btn i { font-size: 3rem; color: #1abc9c; margin-bottom: 15px; }
+        .card-btn p { color: #7f8c8d; font-size: 0.9rem; margin-top: 5px; }
     </style>
 </head>
 <body>
-    <nav class="sidebar">
-        <h2>BiblioTech</h2>
-        <div class="role-tag">Bibliotecario</div>
-        <ul>
-            <li><a href="admin" class="active">🏠 Inicio</a></li>
-            <li><a href="admin/alumnos">👥 Gestión Alumnos</a></li>
-            <li><a href="admin/asistencias">📋 Ver Ingresos Hoy</a></li>
-        </ul>
-        <a href="logout" class="btn-logout">Cerrar Sesión</a>
-    </nav>
+    <div class="nav-top">
+        <div style="font-weight: bold; font-size: 1.2rem; color: #1abc9c;">
+            <i class="fas fa-university"></i> BiblioTech Filial Sur
+        </div>
+        <a href="logout" style="color: #e74c3c; text-decoration: none; font-weight: bold;">
+            Salir <i class="fas fa-sign-out-alt"></i>
+        </a>
+    </div>
 
-    <main class="main-content">
-        <div class="header">
-            <h1>Panel de Control</h1>
-            <p style="color: #7f8c8d;">Hola, <?php echo $_SESSION['nombre']; ?>. Gestiona el ingreso y catálogo hoy.</p>
+    <div class="container">
+        <div class="welcome-box">
+            <h1>Bienvenido, <?php echo explode(' ', $_SESSION['nombre'])[0]; ?></h1>
+            <p>Sede Filial Sur - Módulo de Gestión Bibliotecaria</p>
         </div>
 
         <div class="stats-grid">
-            <div class="card">
-                <h3>Alumnos Registrados</h3>
-                <div class="number"><?php echo $totalAlumnos; ?></div>
-                <a href="admin/alumnos" class="btn-card">Administrar Alumnos</a>
+            <div class="stat-card">
+                <div class="stat-icon" style="background: #e8f4fd; color: #3498db;">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-info">
+                    <h3><?php echo $totalAlumnos; ?></h3>
+                    <p>Total Alumnos</p>
+                </div>
             </div>
-            
-            <div class="card" style="border-top-color: #bdc3c7; opacity: 0.7;">
-                <h3>Libros en Sistema</h3>
-                <div class="number">0</div>
-                <a href="#" class="btn-card" style="background: #95a5a6;">Ver Catálogo</a>
+
+            <div class="stat-card" style="flex-wrap: wrap;">
+                <div style="display: flex; align-items: center; gap: 15px; width: 100%;">
+                    <div class="stat-icon" style="background: #fdf2e9; color: #e67e22;">
+                        <i class="fas fa-door-open"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3><?php echo $ocupacionFiltro; ?></h3>
+                        <p>Cubículos en Uso</p>
+                    </div>
+                </div>
+                <div style="width: 100%; background: #eee; height: 6px; border-radius: 5px; margin-top: 10px; overflow: hidden;">
+                    <div style="width: <?php echo ($ocupados / $max_cubiculos) * 100; ?>%; background: #e67e22; height: 100%; transition: 0.5s;"></div>
+                </div>
             </div>
         </div>
-    </main>
+
+        <div class="grid-admin">
+            <a href="admin/alumnos" class="card-btn">
+                <i class="fas fa-user-graduate"></i>
+                <h3>Gestión de Alumnos</h3>
+                <p>Buscar, editar y registrar nuevos estudiantes.</p>
+            </a>
+            
+            <a href="admin/cubiculos" class="card-btn">
+                <i class="fas fa-th-large"></i>
+                <h3>Control de Cubículos</h3>
+                <p>Monitorear espacios ocupados y tiempos de estancia.</p>
+            </a>
+            
+            <a href="admin/asistencias" class="card-btn">
+                <i class="fas fa-list-alt"></i>
+                <h3>Historial de Asistencias</h3>
+                <p>Ver quiénes ingresaron hoy a la biblioteca.</p>
+            </a>
+        </div>
+    </div>
 </body>
 </html>

@@ -18,6 +18,20 @@
             position: relative;
         }
 
+        /* Reloj Digital en Tiempo Real */
+        .digital-clock {
+            position: absolute;
+            top: 30px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2c3e50;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 10px 25px;
+            border-radius: 50px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            letter-spacing: 2px;
+        }
+
         /* Contenedor Principal de Marca */
         .brand-wrapper {
             display: flex;
@@ -26,63 +40,37 @@
             padding: 25px 45px;
             border-radius: 20px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.08);
-            margin-bottom: 60px;
+            margin-bottom: 50px;
         }
 
-        /* Espacio para el Logo */
         .brand-logo-img {
-            width: 80px;
-            height: 80px;
-            margin-right: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: #f8f9fa; /* Fondo gris claro mientras no hay imagen */
-            border-radius: 12px;
-            overflow: hidden;
+            width: 80px; height: 80px; margin-right: 20px;
+            display: flex; justify-content: center; align-items: center;
+            background: #f8f9fa; border-radius: 12px; overflow: hidden;
         }
 
-        .brand-logo-img img {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-        }
+        .brand-logo-img img { max-width: 100%; max-height: 100%; object-fit: contain; }
 
-        /* Texto BiblioTech */
         .brand-text {
-            font-size: 2.8rem;
-            font-weight: 700;
-            color: #2c3e50;
-            padding-right: 25px;
-            border-right: 2px solid #ddd;
+            font-size: 2.8rem; font-weight: 700; color: #2c3e50;
+            padding-right: 25px; border-right: 2px solid #ddd;
         }
-
         .brand-text span { color: #1abc9c; }
 
-        /* Información de la Filial */
-        .brand-info {
-            padding-left: 25px;
-            text-align: left;
+        .brand-info { padding-left: 25px; text-align: left; }
+        .brand-info h2 { font-size: 1.6rem; color: #34495e; font-weight: 600; line-height: 1.2; }
+        .brand-info p { color: #1abc9c; font-size: 1rem; font-weight: 600; letter-spacing: 1px; }
+
+        /* Contenedor de Botones en Grid */
+        .options-grid {
+            display: flex;
+            gap: 40px;
+            justify-content: center;
         }
 
-        .brand-info h2 {
-            font-size: 1.6rem;
-            color: #34495e;
-            font-weight: 600;
-            line-height: 1.2;
-        }
-
-        .brand-info p {
-            color: #1abc9c;
-            font-size: 1rem;
-            font-weight: 600;
-            letter-spacing: 1px;
-        }
-
-        /* Botón de Registro */
         .card-btn {
             background: white;
-            padding: 60px 100px;
+            padding: 50px 70px;
             border-radius: 30px;
             text-decoration: none;
             color: #2c3e50;
@@ -91,6 +79,7 @@
             align-items: center;
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            width: 380px;
         }
 
         .card-btn:hover {
@@ -99,60 +88,69 @@
         }
 
         .icon-circle {
-            width: 110px;
-            height: 110px;
-            background: #1abc9c;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 50px;
-            color: white;
-            margin-bottom: 25px;
+            width: 100px; height: 100px;
+            background: #1abc9c; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 45px; color: white; margin-bottom: 25px;
             box-shadow: 0 8px 20px rgba(26, 188, 156, 0.3);
         }
 
-        .card-btn h3 { font-size: 2rem; margin-bottom: 8px; }
+        /* Color diferenciado para cubículos */
+        .cubiculo-icon { background: #3498db; box-shadow: 0 8px 20px rgba(52, 152, 219, 0.3); }
 
-        /* Acceso Admin Oculto */
+        .card-btn h3 { font-size: 1.8rem; margin-bottom: 8px; }
+
         .admin-trigger {
-            position: absolute;
-            bottom: 25px;
-            right: 25px;
-            opacity: 0.1;
-            text-decoration: none;
-            color: #2c3e50;
-            font-size: 20px;
-            transition: 0.3s;
+            position: absolute; bottom: 25px; right: 25px;
+            opacity: 0.1; text-decoration: none; color: #2c3e50;
+            font-size: 20px; transition: 0.3s;
         }
-
         .admin-trigger:hover { opacity: 1; transform: rotate(20deg); }
     </style>
 </head>
 <body>
 
+    <div class="digital-clock" id="clock">00:00:00</div>
+
     <div class="brand-wrapper">
         <div class="brand-logo-img">
             <img src="./public/img/logo.jpg" alt="Logo">
         </div>
-
-        <div class="brand-text">
-            Biblio<span>Tech</span>
-        </div>
-
+        <div class="brand-text">Biblio<span>Tech</span></div>
         <div class="brand-info">
             <h2>Biblioteca Central</h2>
             <p>FILIAL SUR</p>
         </div>
     </div>
 
-    <a href="registrar-ingreso" class="card-btn">
-        <div class="icon-circle">👤</div>
-        <h3>Registrar Ingreso</h3>
-        <p style="color: #95a5a6;">Marca tu asistencia con tu DNI</p>
-    </a>
+    <div class="options-grid">
+        <a href="registrar-ingreso" class="card-btn">
+            <div class="icon-circle">👤</div>
+            <h3>Registrar Ingreso</h3>
+            <p style="color: #95a5a6;">Asistencia con tu DNI</p>
+        </a>
+
+        <a href="registro-cubiculo" class="card-btn">
+            <div class="icon-circle cubiculo-icon">🚪</div>
+            <h3>Uso de Cubículos</h3>
+            <p style="color: #95a5a6;">Reserva tu espacio</p>
+        </a>
+    </div>
 
     <a href="login" class="admin-trigger">⚙️</a>
+
+    <script>
+        // Función para el reloj en tiempo real
+        function updateClock() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            document.getElementById('clock').textContent = `${hours}:${minutes}:${seconds}`;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+    </script>
 
 </body>
 </html>

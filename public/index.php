@@ -1,13 +1,21 @@
 <?php
+date_default_timezone_set('America/Lima'); // Establece la hora local de Perú
+
 // public/index.php
 session_start();
 require_once '../app/core/Database.php';
+
+// --- CONFIGURACIÓN GLOBAL (Agrégalo aquí para que no de error) ---
+$max_cubiculos = 5; 
+
+
 
 // --- FUNCIÓN GLOBAL PARA REGISTRAR ASISTENCIA ---
 function registrarAsistencia($db, $dni) {
     $ins = $db->prepare("INSERT INTO asistencias (alumno_dni) VALUES (?)");
     $ins->execute([$dni]);
 }
+// ... resto del código antes del switch ...
 
 $url = $_GET['url'] ?? $_GET['action'] ?? 'inicio';
 $url = rtrim($url, '/');
@@ -91,15 +99,29 @@ switch ($url) {
         break;
 
     // ==========================================
-    // DASHBOARDS
+    // DASHBOARDS (CORREGIDO)
     // ==========================================
     case 'superadmin':
     case 'admin':
         if (isset($_SESSION['rol']) && $_SESSION['rol'] === $url) {
+            // 1. Conteo de Usuarios Totales (Solo para SuperAdmin)
             $totalUsuarios = $db->query("SELECT COUNT(*) FROM usuarios")->fetchColumn();
-            $totalAlumnos = $db->query("SELECT COUNT(*) FROM alumnos")->fetchColumn();
+
+            // 2. Conteo de Alumnos Únicos (Evita duplicar si un alumno tiene dos registros)
+            $totalAlumnos = $db->query("SELECT COUNT(DISTINCT dni) FROM alumnos")->fetchColumn();
+
+            // 3. Conteo de Cubículos Ocupados actualmente
+            $ocupados = $db->query("SELECT COUNT(*) FROM prestamos_cubiculos WHERE estado = 'ocupado'")->fetchColumn();
+
+            // 4. Crear la cadena de texto para la vista (Ej: 1 / 5)
+            // Nota: $max_cubiculos viene de la configuración global al inicio de tu index
+            $ocupacionFiltro = $ocupados . " / " . $max_cubiculos;
+
             require_once "../app/views/{$url}/dashboard.php";
-        } else { header("Location: login"); }
+        } else { 
+            header("Location: login"); 
+            exit();
+        }
         break;
 
     // ==========================================
@@ -332,6 +354,178 @@ case 'superadmin/usuarios/eliminar':
         }
         exit();
     } break;
+
+// ==========================================
+    // GESTIÓN DE CUBÍCULOS (Filial Sur)
+    // ==========================================
+
+    // 1. PANEL DE MONITOREO (ADMIN / SUPERADMIN)
+    case 'superadmin/cubiculos':
+    case 'admin/cubiculos':
+        if (isset($_SESSION['rol'])) {
+            // 1. CONSULTA PARA CUBÍCULOS OCUPADOS (MAPA)
+            $queryOcupados = "SELECT p.*, al_p.apellidos_nombres, al_p.carrera 
+                              FROM prestamos_cubiculos p 
+                              INNER JOIN (
+                                  SELECT t1.dni, t1.apellidos_nombres, t1.carrera 
+                                  FROM alumnos t1
+                                  WHERE t1.id = (
+                                      SELECT t2.id FROM alumnos t2 
+                                      WHERE t2.dni = t1.dni 
+                                      ORDER BY CASE estado 
+                                          WHEN 'egresado' THEN 1 
+                                          WHEN 'activo' THEN 2 
+                                          ELSE 3 END ASC 
+                                      LIMIT 1
+                                  )
+                              ) AS al_p ON p.alumno_dni = al_p.dni 
+                              WHERE p.estado = 'ocupado' 
+                              ORDER BY p.hora_inicio ASC";
+            
+            $prestamos = $db->query($queryOcupados)->fetchAll(PDO::FETCH_ASSOC);
+
+            // 2. CONSULTA PARA EL HISTORIAL (TABLA INFERIOR)
+            // Usamos la misma lógica pero filtramos por estado 'libre' y fecha de hoy
+            $queryHistorial = "SELECT p.*, al_h.apellidos_nombres, al_h.carrera 
+                               FROM prestamos_cubiculos p 
+                               INNER JOIN (
+                                   SELECT t1.dni, t1.apellidos_nombres, t1.carrera 
+                                   FROM alumnos t1
+                                   WHERE t1.id = (
+                                       SELECT t2.id FROM alumnos t2 
+                                       WHERE t2.dni = t1.dni 
+                                       ORDER BY CASE estado 
+                                           WHEN 'egresado' THEN 1 
+                                           WHEN 'activo' THEN 2 
+                                           ELSE 3 END ASC 
+                                       LIMIT 1
+                                   )
+                               ) AS al_h ON p.alumno_dni = al_h.dni 
+                               WHERE p.estado = 'libre' AND p.fecha_prestamo = CURDATE()
+                               ORDER BY p.hora_fin DESC";
+            
+            $historial = $db->query($queryHistorial)->fetchAll(PDO::FETCH_ASSOC);
+            
+            require_once '../app/views/cubiculos/gestion.php';
+        } break;
+
+    // 2. VISTA PÚBLICA PARA QUE EL ALUMNO SE REGISTRE
+    case 'registro-cubiculo':
+        require_once '../app/views/cubiculos/registro_publico.php';
+        break;
+
+    // 3. PROCESAR EL REGISTRO DEL ALUMNO (DESDE TABLET/KIOSKO)
+    case 'procesar-cubiculo-publico':
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $dni = $_POST['dni'];
+            $num = $_POST['numero_cubiculo'];
+            $tiempo = $_POST['tiempo_estancia'];
+
+            // Validar si el alumno existe y su estado es apto
+            $stmt = $db->prepare("SELECT apellidos_nombres, estado FROM alumnos WHERE dni = ? 
+                                  ORDER BY CASE estado WHEN 'egresado' THEN 1 WHEN 'activo' THEN 2 ELSE 3 END ASC LIMIT 1");
+            $stmt->execute([$dni]);
+            $alumno = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            // Verificar si el cubículo no se ocupó hace un segundo
+            $check = $db->prepare("SELECT id FROM prestamos_cubiculos WHERE numero_cubiculo = ? AND estado = 'ocupado'");
+            $check->execute([$num]);
+
+            if (!$alumno || $alumno['estado'] === 'inactivo') {
+                header("Location: registro-cubiculo?msg=error_alumno");
+            } elseif ($check->fetch()) {
+                header("Location: registro-cubiculo?msg=ocupado");
+            } else {
+                // Insertar el préstamo
+                $ins = $db->prepare("INSERT INTO prestamos_cubiculos (alumno_dni, numero_cubiculo, tiempo_solicitado) VALUES (?, ?, ?)");
+                $ins->execute([$dni, $num, $tiempo]);
+                
+                $nombre = urlencode($alumno['apellidos_nombres']);
+                header("Location: registro-cubiculo?msg=success&nombre=$nombre&num=$num&mins=$tiempo");
+            }
+            exit();
+        } break;
+
+    // 4. FINALIZAR PRÉSTAMO (LIBERAR CUBÍCULO)
+    case 'cubiculos/finalizar':
+        if (isset($_GET['id']) && isset($_SESSION['rol'])) {
+            $id = $_GET['id'];
+            
+            // Actualizamos el estado y registramos la hora de salida real
+            $stmt = $db->prepare("UPDATE prestamos_cubiculos SET estado = 'libre', hora_fin = CURRENT_TIME WHERE id = ?");
+            $stmt->execute([$id]);
+
+            header("Location: ../" . $_SESSION['rol'] . "/cubiculos?msg=liberado");
+            exit();
+        } break;
+case 'cubiculos/exportar':
+    if (isset($_SESSION['rol'])) {
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename=reporte_cubiculos_'.date('Y-m-d').'.csv');
+        
+        $output = fopen('php://output', 'w');
+        // Soporte para caracteres especiales (tildes)
+        fprintf($output, chr(0xEF).chr(0xBB).chr(0xBF)); 
+        
+        // Encabezados del Excel
+        fputcsv($output, ['Fecha', 'Cubiculo', 'DNI', 'Alumno', 'Carrera', 'Entrada', 'Salida', 'Minutos Solicitados']);
+        
+        // Consulta del historial completo o del día
+        $query = "SELECT 
+                    p.fecha_prestamo, 
+                    p.numero_cubiculo, 
+                    p.alumno_dni, 
+                    al_p.apellidos_nombres, 
+                    al_p.carrera, 
+                    p.hora_inicio, 
+                    p.hora_fin, 
+                    p.tiempo_solicitado
+                  FROM prestamos_cubiculos p 
+                  INNER JOIN (
+                      SELECT t1.dni, t1.apellidos_nombres, t1.carrera FROM alumnos t1
+                      WHERE t1.id = (
+                          SELECT t2.id FROM alumnos t2 WHERE t2.dni = t1.dni 
+                          ORDER BY CASE estado WHEN 'egresado' THEN 1 WHEN 'activo' THEN 2 ELSE 3 END ASC LIMIT 1
+                      )
+                  ) AS al_p ON p.alumno_dni = al_p.dni 
+                  WHERE p.estado = 'libre' 
+                  ORDER BY p.fecha_prestamo DESC, p.hora_fin DESC";
+        
+        $stmt = $db->query($query);
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            fputcsv($output, $row);
+        }
+        fclose($output);
+        exit();
+    } break;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     // ==========================================
     // OTROS (USUARIOS, LOGOUT)
