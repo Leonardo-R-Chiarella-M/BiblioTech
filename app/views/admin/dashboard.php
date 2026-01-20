@@ -21,12 +21,17 @@
         .stat-info h3 { font-size: 1.5rem; color: #2c3e50; }
         .stat-info p { color: #7f8c8d; font-size: 0.8rem; font-weight: 600; }
         
+        /* Barra de progreso visual */
+        .progress-bg { width: 100%; background: #eee; height: 6px; border-radius: 5px; margin-top: 10px; overflow: hidden; }
+        .progress-fill { height: 100%; transition: 0.5s; }
+
         /* Botones Principales */
-        .grid-admin { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; }
-        .card-btn { background: white; padding: 30px; border-radius: 20px; text-decoration: none; color: #2c3e50; transition: 0.3s; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.05); border: 1px solid transparent; }
+        .grid-admin { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+        .card-btn { background: white; padding: 25px; border-radius: 20px; text-decoration: none; color: #2c3e50; transition: 0.3s; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.05); border: 1px solid transparent; }
         .card-btn:hover { transform: translateY(-10px); box-shadow: 0 15px 30px rgba(0,0,0,0.1); border-color: #1abc9c; }
-        .card-btn i { font-size: 3rem; color: #1abc9c; margin-bottom: 15px; }
-        .card-btn p { color: #7f8c8d; font-size: 0.9rem; margin-top: 5px; }
+        .card-btn i { font-size: 2.5rem; color: #1abc9c; margin-bottom: 15px; }
+        .card-btn h3 { font-size: 1.1rem; margin-bottom: 5px; }
+        .card-btn p { color: #7f8c8d; font-size: 0.8rem; }
     </style>
 </head>
 <body>
@@ -66,8 +71,23 @@
                         <p>Cubículos en Uso</p>
                     </div>
                 </div>
-                <div style="width: 100%; background: #eee; height: 6px; border-radius: 5px; margin-top: 10px; overflow: hidden;">
-                    <div style="width: <?php echo ($ocupados / $max_cubiculos) * 100; ?>%; background: #e67e22; height: 100%; transition: 0.5s;"></div>
+                <div class="progress-bg">
+                    <div class="progress-fill" style="width: <?php echo ($ocupados / $max_cubiculos) * 100; ?>%; background: #e67e22;"></div>
+                </div>
+            </div>
+
+            <div class="stat-card" style="flex-wrap: wrap;">
+                <div style="display: flex; align-items: center; gap: 15px; width: 100%;">
+                    <div class="stat-icon" style="background: #ebf5fb; color: #3498db;">
+                        <i class="fas fa-laptop"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3><?php echo $ocupados_pc . " / " . $max_pcs; ?></h3>
+                        <p>PCs en Uso</p>
+                    </div>
+                </div>
+                <div class="progress-bg">
+                    <div class="progress-fill" style="width: <?php echo ($ocupados_pc / $max_pcs) * 100; ?>%; background: #3498db;"></div>
                 </div>
             </div>
         </div>
@@ -76,19 +96,25 @@
             <a href="admin/alumnos" class="card-btn">
                 <i class="fas fa-user-graduate"></i>
                 <h3>Gestión de Alumnos</h3>
-                <p>Buscar, editar y registrar nuevos estudiantes.</p>
+                <p>Buscar, editar y registrar estudiantes.</p>
             </a>
             
             <a href="admin/cubiculos" class="card-btn">
                 <i class="fas fa-th-large"></i>
-                <h3>Control de Cubículos</h3>
-                <p>Monitorear espacios ocupados y tiempos de estancia.</p>
+                <h3>Control Cubículos</h3>
+                <p>Monitoreo de espacios y tiempos.</p>
+            </a>
+
+            <a href="admin/computadoras" class="card-btn" style="border-color: #ebf5fb;">
+                <i class="fas fa-desktop" style="color: #3498db;"></i>
+                <h3>Control de PCs</h3>
+                <p>Gestión de equipos y cronómetros.</p>
             </a>
             
             <a href="admin/asistencias" class="card-btn">
                 <i class="fas fa-list-alt"></i>
-                <h3>Historial de Asistencias</h3>
-                <p>Ver quiénes ingresaron hoy a la biblioteca.</p>
+                <h3>Historial Asistencias</h3>
+                <p>Reporte de ingresos diarios.</p>
             </a>
         </div>
     </div>

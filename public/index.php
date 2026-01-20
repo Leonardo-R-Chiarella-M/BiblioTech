@@ -7,6 +7,8 @@ require_once '../app/core/Database.php';
 
 // --- CONFIGURACIÓN GLOBAL (Agrégalo aquí para que no de error) ---
 $max_cubiculos = 5; 
+// --- CONFIGURACIÓN GLOBAL ---
+$max_pcs = 10; // Cantidad de computadoras en la Filial Sur
 
 
 
@@ -99,23 +101,24 @@ switch ($url) {
         break;
 
     // ==========================================
-    // DASHBOARDS (CORREGIDO)
+    // DASHBOARDS (CORREGIDO CON PCs)
     // ==========================================
     case 'superadmin':
     case 'admin':
         if (isset($_SESSION['rol']) && $_SESSION['rol'] === $url) {
-            // 1. Conteo de Usuarios Totales (Solo para SuperAdmin)
-            $totalUsuarios = $db->query("SELECT COUNT(*) FROM usuarios")->fetchColumn();
-
-            // 2. Conteo de Alumnos Únicos (Evita duplicar si un alumno tiene dos registros)
+            // Conteo de Alumnos
             $totalAlumnos = $db->query("SELECT COUNT(DISTINCT dni) FROM alumnos")->fetchColumn();
 
-            // 3. Conteo de Cubículos Ocupados actualmente
+            // LÓGICA DE CUBÍCULOS
             $ocupados = $db->query("SELECT COUNT(*) FROM prestamos_cubiculos WHERE estado = 'ocupado'")->fetchColumn();
-
-            // 4. Crear la cadena de texto para la vista (Ej: 1 / 5)
-            // Nota: $max_cubiculos viene de la configuración global al inicio de tu index
             $ocupacionFiltro = $ocupados . " / " . $max_cubiculos;
+
+            // LÓGICA DE COMPUTADORAS (Añade esto para quitar el error)
+            $ocupados_pc = $db->query("SELECT COUNT(*) FROM prestamos_computadoras WHERE estado = 'ocupado'")->fetchColumn();
+            // $max_pcs debe estar definida al inicio de tu index.php (ej: $max_pcs = 10;)
+
+            // Solo para SuperAdmin
+            $totalUsuarios = $db->query("SELECT COUNT(*) FROM usuarios")->fetchColumn();
 
             require_once "../app/views/{$url}/dashboard.php";
         } else { 
@@ -506,19 +509,72 @@ case 'cubiculos/exportar':
 
 
 
+// --- RUTAS PARA COMPUTADORAS ---
+// ==========================================
+// GESTIÓN DE COMPUTADORAS (ADMIN & SUPERADMIN)
+// ==========================================
+case 'admin/computadoras':
+case 'superadmin/computadoras':
+    if (isset($_SESSION['rol']) && ($_SESSION['rol'] === 'admin' || $_SESSION['rol'] === 'superadmin')) {
+        
+        // 1. Obtener PCs OCUPADAS para el Mapa Visual
+        $queryActivos = "SELECT p.*, al.apellidos_nombres, al.carrera 
+                         FROM prestamos_computadoras p 
+                         INNER JOIN alumnos al ON p.alumno_dni = al.dni 
+                         WHERE p.estado = 'ocupado' 
+                         AND al.id = (SELECT id FROM alumnos WHERE dni = al.dni ORDER BY CASE estado WHEN 'egresado' THEN 1 WHEN 'activo' THEN 2 ELSE 3 END ASC LIMIT 1)
+                         ORDER BY p.numero_pc ASC";
+        $prestamos_pc = $db->query($queryActivos)->fetchAll(PDO::FETCH_ASSOC);
 
+        // 2. Obtener Historial de HOY para la Tabla
+        $queryHistorial = "SELECT p.*, al.apellidos_nombres, al.carrera 
+                           FROM prestamos_computadoras p 
+                           INNER JOIN alumnos al ON p.alumno_dni = al.dni 
+                           WHERE p.estado = 'libre' AND p.fecha_prestamo = CURDATE()
+                           ORDER BY p.hora_fin DESC";
+        $historial_pc = $db->query($queryHistorial)->fetchAll(PDO::FETCH_ASSOC);
 
+        require_once '../app/views/computadoras/gestion.php';
+    } else {
+        header("Location: ../login");
+    }
+    break;
 
+case 'computadoras/finalizar':
+    if (isset($_GET['id'])) {
+        $db->prepare("UPDATE prestamos_computadoras SET estado = 'libre', hora_fin = CURRENT_TIME WHERE id = ?")->execute([$_GET['id']]);
+        header("Location: ../" . $_SESSION['rol'] . "/computadoras?msg=liberado");
+    } break;
 
+// --- RUTAS PÚBLICAS DE COMPUTADORAS ---
+case 'registro-pc':
+    // Esta ruta carga la vista del formulario para el alumno
+    require_once '../app/views/computadoras/registro_publico.php';
+    break;
 
+case 'procesar-pc-publico':
+    // Esta ruta procesa los datos enviados por el formulario
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $dni = $_POST['dni'];
+        $num_pc = $_POST['numero_pc'];
+        $tiempo = $_POST['tiempo_estancia'];
 
+        // Validar alumno activo o egresado
+        $stmt = $db->prepare("SELECT apellidos_nombres FROM alumnos WHERE dni = ? AND estado IN ('activo', 'egresado') LIMIT 1");
+        $stmt->execute([$dni]);
+        $alumno = $stmt->fetch(PDO::FETCH_ASSOC);
 
-
-
-
-
-
-
+        if ($alumno) {
+            $ins = $db->prepare("INSERT INTO prestamos_computadoras (alumno_dni, numero_pc, tiempo_solicitado) VALUES (?, ?, ?)");
+            $ins->execute([$dni, $num_pc, $tiempo]);
+            
+            header("Location: registro-pc?msg=success&nombre=" . urlencode($alumno['apellidos_nombres']) . "&num=" . $num_pc);
+        } else {
+            header("Location: registro-pc?msg=error_alumno");
+        }
+        exit();
+    }
+    break;
 
 
 
